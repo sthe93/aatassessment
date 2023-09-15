@@ -1,0 +1,119 @@
+﻿<!-- Pages/Register.razor -->
+@page "/register/{eventId:int}"
+@using EventRegistrationApp.Models
+@using EventRegistrationApp.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject EventService EventService
+@inject NavigationManager NavigationManager
+
+<div class="container mt-5">
+    <h1 class="display-4">Event Registration</h1>
+
+    @if (selectedEvent != null)
+    {
+        <h2>@selectedEvent.Name</h2>
+        <p><strong>Date:</strong> @selectedEvent.Date</p>
+        <p><strong>Available Seats:</strong> @selectedEvent.TotalSeats</p>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success">@successMessage</div>
+        }
+
+        <EditForm Model="registration" OnValidSubmit="RegisterForEventAsync">
+            <ValidationSummary />
+
+            <div class="form-group mt-3">
+                <label for="userId"><strong>User ID:</strong></label>
+                <InputText @bind-Value="registration.UserId" class="form-control" id="userId" placeholder="Enter your User ID" />
+                <ValidationMessage For="@(() => registration.UserId)" />
+            </div>
+
+            <div class="form-group mt-3">
+                <!-- Add margin-top for spacing -->
+                <button type="submit" class="btn btn-primary">Register</button>
+                <button type="button" class="btn btn-secondary" @onclick="NavigateBack">Back</button>
+
+            </div>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(referenceNumber))
+        {
+            <div class="mt-3">
+                <p><strong>Your Reference Number:</strong> @referenceNumber</p>
+            </div>
+        }
+    }
+    else
+    {
+        <p>Event not found.</p>
+    }
+</div>
+
+
+@code {
+    private Event selectedEvent;
+    private string referenceNumber;
+    private string errorMessage;
+    private string successMessage;
+    private Registration registration = new Registration(); // Use the Registration class to handle form data
+
+    [Inject]
+    private RegistrationService RegistrationService { get; set; }
+
+    [Parameter]
+    public int EventId { get; set; }
+    private void NavigateBack()
+    {
+        // Navigate back to the events list page
+        NavigationManager.NavigateTo("/");
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch the selected event using EventId
+        selectedEvent = await EventService.GetEventByIdAsync(EventId);
+    }
+
+    async Task RegisterForEventAsync()
+    {
+        // Validate the user ID format
+        if (!IsValidUserIdFormat(registration.UserId))
+        {
+            errorMessage = "User ID must be at least 6 characters long and contain both letters and digits.";
+            successMessage = null;
+            return;
+        }
+
+        var result = await RegistrationService.RegisterForEventAsync(EventId, registration.UserId);
+
+        if (result == RegistrationResult.Success)
+        {
+            referenceNumber = RegistrationService.ReferenceNumber;
+            errorMessage = null;
+            successMessage = "Event registration was successful!";
+        }
+        else
+        {
+            errorMessage = result switch
+            {
+                RegistrationResult.EventNotFound => "Event not found.",
+                RegistrationResult.NoAvailableSeats => "No available seats for this event.",
+                RegistrationResult.AlreadyRegistered => "You have already registered for this event.",
+                RegistrationResult.Error => "An error occurred while processing your request.",
+                _ => errorMessage // Keep the existing error message if none of the above cases match
+            };
+            successMessage = null;
+        }
+    }
+
+    bool IsValidUserIdFormat(string userId)
+    {
+        // User ID must be at least 6 characters long and contain both letters and digits
+        return !string.IsNullOrEmpty(userId) && userId.Length >= 6 && userId.Any(char.IsLetter) && userId.Any(char.IsDigit);
+    }
+}

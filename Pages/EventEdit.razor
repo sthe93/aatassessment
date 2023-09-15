@@ -1,0 +1,123 @@
+﻿@page "/events/edit/{eventId:int}"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using EventRegistrationApp.Services
+@using EventRegistrationApp.Data
+@using EventRegistrationApp.Models
+@inject NavigationManager NavigationManager
+@using System.ComponentModel.DataAnnotations
+
+<div class="container mt-5">
+    <h1>Edit Event</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            @if (editedEvent != null)
+            {
+                <EditForm Model="editedEvent" OnValidSubmit="EditEventAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group mt-3">
+                        <label for="eventName">Event Name</label>
+                        <InputText class="form-control" id="eventName" @bind-Value="editedEvent.Name" />
+                    </div>
+                     <div class="form-group mt-3">
+                            <label for="eventDate">Event Date</label>
+                            <InputDate class="form-control" id="eventDate" @bind-Value="editedEvent.Date" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                     </div>
+                    <div class="form-group mt-3">
+                        <label for="totalSeats">Total Seats</label>
+                        <InputNumber class="form-control" id="totalSeats" @bind-Value="editedEvent.TotalSeats" />
+                    </div>
+                    <div class="form-group mt-3">
+                        <!-- Add margin-top for spacing -->
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" @onclick="NavigateBack">Back</button>
+                    </div>
+                </EditForm>
+
+                @if (isUpdated)
+                {
+                    <p class="text-success">Event successfully updated!</p>
+                }
+                else if (isUpdateFailed)
+                {
+                    <p class="text-danger">@errorMessage</p>
+                }
+            }
+            else
+            {
+                <p>Event not found. Please check the event ID or try again later.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private Event editedEvent;
+    private bool isUpdated = false;
+    private bool isUpdateFailed = false;
+    private bool isDateInPast = false;
+    private string errorMessage;
+
+    // Inject your EventService here
+    [Inject]
+    private EventService EventService { get; set; }
+
+    [Parameter]
+    public int EventId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load the event to edit using the EventService
+        editedEvent = await EventService.GetEventByIdAsync(EventId);
+    }
+    private void NavigateBack()
+    {
+        // Navigate back to the events list page
+        NavigationManager.NavigateTo("/events");
+    }
+    private async Task EditEventAsync()
+    {
+        // Check if editedEvent is null (not found)
+        if (editedEvent == null)
+        {
+            // Display an error message to the user
+            // You can also log this error for debugging purposes
+            return;
+        }
+
+        // Implement event editing using the EventService
+        var result = await EventService.UpdateEventAsync(editedEvent);
+
+        if (result == EventCreationResult.Success)
+        {
+            // Event update was successful, show a success message
+            isUpdated = true;
+            errorMessage = null;
+
+            // Wait for a brief moment to display the success message
+            await Task.Delay(2000); // Adjust the delay time as needed
+
+            // Redirect to the events list page
+            NavigationManager.NavigateTo("/events");
+        }
+        else
+        {
+            // Event update failed, handle the specific error case
+            errorMessage = result switch
+            {
+                EventCreationResult.EventDateInPast => "Event date must not be in the past.",
+                EventCreationResult.EmptyEventName => "Event name is required.",
+                EventCreationResult.InvalidTotalSeats => "Total seats must be greater than 0.",
+                EventCreationResult.EventAlreadyExists => "An event with the same name already exists.",
+                EventCreationResult.NoAvailableSeats => "No available seats for this event.",
+                _ => "An error occurred while updating the event."
+            };
+        }
+
+        // Return a completed task
+        return;
+    }
+}

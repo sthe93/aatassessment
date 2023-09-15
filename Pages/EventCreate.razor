@@ -1,0 +1,100 @@
+﻿@page "/events/create"
+@using EventRegistrationApp.Models
+@using EventRegistrationApp.Services
+@inject NavigationManager NavigationManager
+@using System.ComponentModel.DataAnnotations
+
+<div class="container mt-5">
+    <h1>Create Event</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <EditForm Model="newEvent" OnValidSubmit="CreateEventAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group mt-3">
+                    <label for="eventName">Event Name</label>
+                    <InputText class="form-control" id="eventName" @bind-Value="newEvent.Name" />
+                    
+                </div>
+                <div class="form-group mt-3">
+                    <label for="eventDate">Event Date</label>
+                    <InputDate class="form-control" id="eventDate" @bind-Value="newEvent.Date" />
+                    
+                </div>
+                <div class="form-group mt-3">
+                    <label for="totalSeats">Total Seats</label>
+                    <InputNumber class="form-control" id="totalSeats" @bind-Value="newEvent.TotalSeats" />
+                    
+                </div>
+              
+                <div class="form-group mt-3">
+                    <button type="submit" class="btn btn-primary">Create Event</button>
+                    <button type="button" class="btn btn-secondary" @onclick="NavigateBack">Back</button>
+                </div>
+            </EditForm>
+
+            @if (isEventCreated)
+            {
+                <p class="text-success">Event created successfully!</p>
+            }
+            else if (isEventCreationFailed)
+            {
+                <p class="text-danger">@errorMessage</p>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+
+@code {
+    private Event newEvent = new Event { Date = DateTime.Now }; // Set the default date to today's date
+    private bool isEventCreated = false;
+    private bool isEventCreationFailed = false;
+    private bool isDateInPast = false;
+    private string errorMessage;
+    private string successMessage;
+    [Inject]
+    private EventService EventService { get; set; }
+    private void NavigateBack()
+    {
+        // Navigate back to the events list page
+        NavigationManager.NavigateTo("/events");
+    }
+    private async Task CreateEventAsync()
+    {
+        var result = await EventService.CreateEventAsync(newEvent);
+
+        if (result == EventCreationResult.Success)
+        {
+            // Event creation was successful, show a success message
+            successMessage = "Event created successfully!";
+            errorMessage = null;
+
+            // Set the flag to true
+            isEventCreated = true;
+
+            // Wait for a brief moment to display the success message
+            await Task.Delay(2000); // Adjust the delay time as needed
+
+            // Redirect to the events list page
+            NavigationManager.NavigateTo("/events");
+        }
+        else
+        {
+            // Event creation failed, handle the specific error case
+            errorMessage = result switch
+            {
+                EventCreationResult.EventDateInPast => "Event date must not be in the past.",
+                EventCreationResult.EmptyEventName => "Event name is required.",
+                EventCreationResult.InvalidTotalSeats => "Total seats must be greater than 0.",
+                EventCreationResult.EventAlreadyExists => "An event with the same name already exists.",
+                EventCreationResult.NoAvailableSeats => "No available seats for this event.",
+                _ => "An error occurred while creating the event."
+            };
+        }
+    }
+}
