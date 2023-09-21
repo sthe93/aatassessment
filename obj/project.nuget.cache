@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "V2Udt1w5nuo1Omc0tZKMwO/6q5cIKubeYlHpNcVNZTAkMRa0uKoHZ9KmME/FmgSwT+3+krDHhLleiiXr8bF57w==",
+  "dgSpecHash": "8b2t+23bJe17AqpEos1ANzYaIN2mK+5VY+pH1cNYjQLt0+jflB5CVpNtBOmtT6bqgMm2saXxPHSMWa6HUTcLvw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\SChivambo\\EventRegistrationApp\\EventRegistrationApp.csproj",
+  "projectFilePath": "C:\\Users\\SChivambo\\EventRegistrationApp\\aatassessment\\EventRegistrationApp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\SChivambo\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\SChivambo\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",

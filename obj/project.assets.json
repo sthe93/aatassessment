@@ -12117,11 +12117,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\SChivambo\\EventRegistrationApp\\EventRegistrationApp.csproj",
+      "projectUniqueName": "C:\\Users\\SChivambo\\EventRegistrationApp\\aatassessment\\EventRegistrationApp.csproj",
       "projectName": "EventRegistrationApp",
-      "projectPath": "C:\\Users\\SChivambo\\EventRegistrationApp\\EventRegistrationApp.csproj",
+      "projectPath": "C:\\Users\\SChivambo\\EventRegistrationApp\\aatassessment\\EventRegistrationApp.csproj",
       "packagesPath": "C:\\Users\\SChivambo\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\SChivambo\\EventRegistrationApp\\obj\\",
+      "outputPath": "C:\\Users\\SChivambo\\EventRegistrationApp\\aatassessment\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\SChivambo\\AppData\\Roaming\\NuGet\\NuGet.Config",
